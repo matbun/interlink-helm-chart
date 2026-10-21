@@ -111,3 +111,101 @@ true
 {{- end -}}
 {{- end -}}
 {{- end }}
+
+{{/*
+Rules for the namespaced objects the virtual kubelet handles: offloaded pods, their
+shadows, and the Secrets and ConfigMaps they mount. Granted cluster-wide, or only in
+virtualNode.tenantNamespace when the virtual node is confined to one namespace.
+*/}}
+{{- define "interlink.namespacedRules" -}}
+- apiGroups:
+    - "apps"
+  resources:
+    - replicasets
+    - deployments
+  verbs:
+    - create
+    - delete
+    - list
+    - get
+    - update
+    - patch
+- apiGroups:
+    - "networking.k8s.io"
+  resources:
+    - ingresses
+  verbs:
+    - update
+    - create
+    - get
+    - list
+    - watch
+    - patch
+    - delete
+- apiGroups:
+    - ""
+  resources:
+    - configmaps
+  verbs:
+    - get
+    - list
+    - watch
+    - create
+    - update
+    - patch
+    - delete
+- apiGroups:
+    - ""
+  resources:
+    - secrets
+  verbs:
+    - get
+    - list
+    - watch
+    - delete
+    {{- if and (eq ($.Values.virtualNode.network.shadowMode | default "") "ssh") (ne (toString $.Values.virtualNode.network.ssh.replicateCredentials) "false") }}
+    # Copying the SSH credential into each shadow's namespace needs write access.
+    # Only granted when that is switched on: it is cluster-wide.
+    - create
+    - update
+    - patch
+    {{- end }}
+- apiGroups:
+    - ""
+  resources:
+    - services
+    - serviceaccounts
+    - namespaces
+  verbs:
+    - get
+    - list
+    - watch
+# For https://kubernetes.io/docs/reference/kubernetes-api/
+# authentication-resources/token-request-v1/
+- apiGroups: [""]
+  resources: ["serviceaccounts/token", "namespaces"]
+  verbs:
+    - create
+    - get
+    - list
+- apiGroups:
+    - ""
+  resources:
+    - pods
+    - services
+  verbs:
+    - update
+    - create
+    - get
+    - list
+    - watch
+    - patch
+    - delete
+- apiGroups:
+    - ""
+  resources:
+    - pods/status
+  verbs:
+    - update
+    - patch
+{{- end }}

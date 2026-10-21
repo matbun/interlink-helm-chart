@@ -35,6 +35,9 @@ data:
     ErrorsOnlyLogging:  {{.Values.interlink.logging.errorsOnlyLogging | default false}}
     ServiceAccount: "{{ .Values.nodeName }}"
     Namespace: "{{ .Release.Namespace }}"
+    {{- with .Values.virtualNode.tenantNamespace }}
+    TenantNamespace: {{ . | quote }}
+    {{- end }}
     VKTokenFile: {{.Values.OAUTH.enabled | ternary "/opt/interlink/token" "/dev/null"}}
     {{- if .Values.interlink.tls.enabled }}
     TLS:
@@ -88,7 +91,7 @@ data:
         LoginHost: {{ required "virtualNode.network.ssh.loginHost is required when shadowMode is ssh" $ssh.loginHost | quote }}
         User: {{ required "virtualNode.network.ssh.user is required when shadowMode is ssh" $ssh.user | quote }}
         Port: {{ $ssh.port | default 22 }}
-        ReplicateCredentials: {{ ne (toString $ssh.replicateCredentials) "false" }}
+        ReplicateCredentials: {{ ne (toString $ssh.replicateCredentials) "false" }}{{- if and $.Values.virtualNode.tenantNamespace (ne (toString $ssh.replicateCredentials) "false") }}{{ fail "virtualNode.tenantNamespace needs virtualNode.network.ssh.replicateCredentials: false, with the credential provisioned in the tenant namespace" }}{{- end }}
         {{- with $ssh.image }}
         Image: {{ . | quote }}
         {{- end }}

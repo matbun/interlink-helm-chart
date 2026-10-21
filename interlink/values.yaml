@@ -84,6 +84,12 @@ virtualNode:
   # Tracing configuration
   tracing:
     enabled: false
+  # Confine the virtual node to the pods of one namespace (one tenant): pods from any
+  # other namespace are refused, shadows are created in this namespace, and the virtual
+  # kubelet's RBAC becomes a Role here instead of cluster-wide access to Secrets and pods.
+  # With the ssh shadow, the credential must already be in that namespace
+  # (network.ssh.replicateCredentials: false).
+  tenantNamespace: ""
   # uncomment to enable custom nodeSelector and nodeTaints
   # nodeLabels:
   #  - "accelerator=a100"
