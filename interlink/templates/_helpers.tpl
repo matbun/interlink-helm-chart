@@ -208,4 +208,11 @@ virtualNode.tenantNamespace when the virtual node is confined to one namespace.
   verbs:
     - update
     - patch
+# logs of the containers a pod keeps on the cluster come from its shadow
+- apiGroups:
+    - ""
+  resources:
+    - pods/log
+  verbs:
+    - get
 {{- end }}
